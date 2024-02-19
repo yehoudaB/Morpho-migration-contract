@@ -9,5 +9,10 @@ remappings = [
     "@morpho-blue-snippets/=lib/morpho-blue-snippets/src/",
     "@aave-v3-core/protocol/=lib/aave-v3-core/contracts/protocol/",
     "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
-    "@morphoAave3Optimizer/=lib/morpho-aavev3-optimizer/"
+    "@morphoAave3Optimizer/=lib/morpho-aavev3-optimizer/",
+    "@aave-v3-core/contracts/=lib/aave-v3-core/contracts/",
+    "@aave-v3-core/interfaces/=lib/aave-v3-core/contracts/interfaces/",
+    "@solmate/=lib/solmate/",
+    "@solmate/utils/=lib/solmate/src/utils/",
+    "@mySrc/=src/" # required because otherwise the compiler will not find the files in the src folder
     ]

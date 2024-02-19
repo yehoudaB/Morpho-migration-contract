@@ -6,18 +6,18 @@ import {Vm} from "forge-std/Vm.sol";
 import {Morpho as AaveV3Optimizer} from "@morphoAave3Optimizer/src/Morpho.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {WETH} from "@morphoAave3Optimizer/lib/solmate/src/tokens/WETH.sol";
+import {WETH} from "@mySrc/WETH.sol";
 import {MorphoBlueSnippets} from "@morpho-blue-snippets/morpho-blue/MorphoBlueSnippets.sol";
 import {MarketParams} from "@morpho-blue/interfaces/IMorpho.sol";
 import {IMorpho, Id} from "@morpho-blue/interfaces/IMorpho.sol";
-import {MigrateAaveV3OptimizerToBlue} from "@morpho-aavev3-optimizer/src/MigrateToBlue.sol";
+import {MigrateAaveV3OptimizerToBlue} from "@mySrc/MigrateToBlue.sol";
 
 contract TestMorphoTransfer is Test {
    
     using SafeERC20 for IERC20;
     AaveV3Optimizer public aaveV3Optimizer;
     IMorpho public morphoBlue;
-    MigrateAaveV3OptimizerToBlue public iMorphoBlue;
+    MigrateAaveV3OptimizerToBlue public migrateAaveV3OptimizerToBlue;
     MorphoBlueSnippets public morphoBlueSnippets;
     address constant USER_1 = 0x0FACEC34a25bE20Fd8DCe63DB46cf902378D44f1; // wsteth depositor in aaveV3optimizer
     address constant WETH_address = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
@@ -31,7 +31,7 @@ contract TestMorphoTransfer is Test {
         aaveV3Optimizer =  AaveV3Optimizer(0x33333aea097c193e66081E930c33020272b33333);
         morphoBlue = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
         morphoBlueSnippets = MorphoBlueSnippets(address(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb));
-        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(iMorphoBlue);
+        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(morphoBlue);
         address owner = aaveV3Optimizer.owner();
         console.log("Morpho owner: %s", owner);
         
@@ -73,7 +73,7 @@ contract TestMorphoTransfer is Test {
     }
 
     function testDeposit_blue() public {
-        //MarketParams memory marketParams = iMorphoBlue.idToMarketParams(wstETH_wETH_marketId);
+        //MarketParams memory marketParams = morphoBlue.idToMarketParams(wstETH_wETH_marketId);
        
         MarketParams memory marketParams =  MarketParams({
           loanToken : WETH_address,
@@ -96,7 +96,7 @@ contract TestMorphoTransfer is Test {
 
     function testFlashLoan() public {
         vm.startBroadcast(USER_1);
-
+        migrateAaveV3OptimizerToBlue.flashLoan(WSTETH, 1 ether, hex"");
         
         vm.stopBroadcast();
     }
