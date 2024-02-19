@@ -21,17 +21,19 @@ contract TestMorphoTransfer is Test {
     MorphoBlueSnippets public morphoBlueSnippets;
     address constant USER_1 = 0x0FACEC34a25bE20Fd8DCe63DB46cf902378D44f1; // wsteth depositor in aaveV3optimizer
     address constant WETH_address = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address constant WSTETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
     address constant chainlinkOracle_wstETH_wETH = 0x2a01EB9496094dA03c4E364Def50f5aD1280AD72;
     address constant adaptativeCurveIrm = 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC;
-  //  Id constant wstETH_wETH_marketId  = 0xc54d7acf14de29e0e5527cabd7a576506870346a78a11a6762e2cca66322ec41;
+    //Id constant wstETH_wETH_marketId  = 0xc54d7acf14de29e0e5527cabd7a576506870346a78a11a6762e2cca66322ec41;
     uint256 constant loanToValue_wstETH_wETH = 945000000000000000;
+
     
     function setUp() public {
         aaveV3Optimizer =  AaveV3Optimizer(0x33333aea097c193e66081E930c33020272b33333);
         morphoBlue = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
         morphoBlueSnippets = MorphoBlueSnippets(address(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb));
-        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(morphoBlue);
+        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(morphoBlue, aaveV3Optimizer);
         address owner = aaveV3Optimizer.owner();
         console.log("Morpho owner: %s", owner);
         
@@ -94,10 +96,26 @@ contract TestMorphoTransfer is Test {
     }
 
 
-    function testFlashLoan() public {
+    function testMigration() public {
         vm.startBroadcast(USER_1);
-        migrateAaveV3OptimizerToBlue.flashLoan(WSTETH, 1 ether, hex"");
+        MarketParams memory marketParams =  MarketParams({
+          loanToken : WETH_address,
+            collateralToken : WSTETH,
+            oracle : chainlinkOracle_wstETH_wETH,
+            irm : adaptativeCurveIrm,
+            lltv : loanToValue_wstETH_wETH
+        });
+        address[] memory userSuppliedAssets = new address[](1);
+        userSuppliedAssets[0] = WSTETH;
+        uint256[] memory userSuppliedAmounts = new uint256[](1);
+        userSuppliedAmounts[0] = 1 ether;
+        IERC20(WSTETH).approve(address(morphoBlue), UINT256_MAX);
+        IERC20(WSTETH).approve(address(aaveV3Optimizer), UINT256_MAX);
+        IERC20(WSTETH).approve(address(migrateAaveV3OptimizerToBlue), UINT256_MAX);
+        IERC20(WETH_address).approve(address(migrateAaveV3OptimizerToBlue), UINT256_MAX);
         
+        migrateAaveV3OptimizerToBlue.migrate(marketParams, userSuppliedAssets, userSuppliedAmounts, WETH_address, 2.7 ether);
+
         vm.stopBroadcast();
     }
 
