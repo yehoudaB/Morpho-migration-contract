@@ -7,7 +7,7 @@ libs = ["lib"]
 remappings = [
     "@aave-v3-core/contracts/=lib/aave-v3-core/contracts/",
     "@aave-v3-core/interfaces/=lib/aave-v3-core/contracts/interfaces/",
-    "@morpho-aavev3-optimizer/=lib/morpho-aavev3-optimizer/src/",
+    "@morpho-aavev3-optimizer/=lib/morpho-aavev3-optimizer/",
     "@aave-v3-core/protocol/=lib/aave-v3-core/contracts/protocol/",
     "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
     ]
