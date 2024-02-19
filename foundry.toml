@@ -4,3 +4,10 @@ out = "out"
 libs = ["lib"]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+remappings = [
+    "@aave-v3-core/contracts/=lib/aave-v3-core/contracts/",
+    "@aave-v3-core/interfaces/=lib/aave-v3-core/contracts/interfaces/",
+    "@morpho-aavev3-optimizer/=lib/morpho-aavev3-optimizer/src/",
+    "@aave-v3-core/protocol/=lib/aave-v3-core/contracts/protocol/",
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    ]
