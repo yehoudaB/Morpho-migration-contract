@@ -1,0 +1,12 @@
+{
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity",
+    "prettier.enable": true,
+    "prettier.endOfLine": "auto",
+    "solidity.compileUsingRemoteVersion": "v0.8.21+commit.d9974bed",
+    "solidity-language-server.trace.server.verbosity": "message",
+    "solidity.formatter": "forge",
+    "editor.defaultFoldingRangeProvider": "NomicFoundation.hardhat-solidity"
+}

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import {Test, console} from "forge-std/Test.sol";
@@ -19,7 +19,7 @@ contract TestMorphoTransfer is Test {
     IMorpho public morphoBlue;
     MigrateAaveV3OptimizerToBlue public migrateAaveV3OptimizerToBlue;
     MorphoBlueSnippets public morphoBlueSnippets;
-    address constant USER_1 = 0x0FACEC34a25bE20Fd8DCe63DB46cf902378D44f1; // wsteth depositor in aaveV3optimizer
+    address constant USER_1 = 0x04Fb136989106430e56F24c3d6A473488235480E; // wsteth depositor in aaveV3optimizer
     address constant WETH_address = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address constant WSTETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
@@ -97,24 +97,38 @@ contract TestMorphoTransfer is Test {
 
 
     function testMigration() public {
-        vm.startBroadcast(USER_1);
-        MarketParams memory marketParams =  MarketParams({
+          uint256 userCollateralWstETH =  aaveV3Optimizer.collateralBalance(WSTETH, USER_1);
+        uint256 userCollateralUSDC =  aaveV3Optimizer.collateralBalance(USDC, USER_1);
+        uint256 userBorrow =  aaveV3Optimizer.borrowBalance(WETH_address, USER_1);
+        
+        address[] memory userSuppliedAssets = new address[](2);
+        userSuppliedAssets[0] = WSTETH;
+        userSuppliedAssets[1] = USDC;
+        uint256[] memory userSuppliedAmounts = new uint256[](2);
+        userSuppliedAmounts[0] = userCollateralWstETH;
+        userSuppliedAmounts[1] = userCollateralUSDC;
+         MarketParams memory marketParams =  MarketParams({
           loanToken : WETH_address,
             collateralToken : WSTETH,
             oracle : chainlinkOracle_wstETH_wETH,
             irm : adaptativeCurveIrm,
             lltv : loanToValue_wstETH_wETH
         });
-        address[] memory userSuppliedAssets = new address[](1);
-        userSuppliedAssets[0] = WSTETH;
-        uint256[] memory userSuppliedAmounts = new uint256[](1);
-        userSuppliedAmounts[0] = 1 ether;
-        IERC20(WSTETH).approve(address(morphoBlue), UINT256_MAX);
-        IERC20(WSTETH).approve(address(aaveV3Optimizer), UINT256_MAX);
-        IERC20(WSTETH).approve(address(migrateAaveV3OptimizerToBlue), UINT256_MAX);
-        IERC20(WETH_address).approve(address(migrateAaveV3OptimizerToBlue), UINT256_MAX);
-        
-        migrateAaveV3OptimizerToBlue.migrate(marketParams, userSuppliedAssets, userSuppliedAmounts, WETH_address, 2.7 ether);
+
+
+        vm.startBroadcast(USER_1);
+
+        aaveV3Optimizer.approveManager(address(migrateAaveV3OptimizerToBlue), true);
+        morphoBlue.setAuthorization(address(migrateAaveV3OptimizerToBlue), true);
+        migrateAaveV3OptimizerToBlue.migrate(
+            USER_1,
+            marketParams, 
+            userSuppliedAssets, 
+            userSuppliedAmounts, 
+            0, // WSTETH is the collateral
+            WETH_address, 
+            userBorrow
+        );
 
         vm.stopBroadcast();
     }

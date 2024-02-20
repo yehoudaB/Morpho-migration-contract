@@ -1,0 +1,13 @@
+
+TENDERLY_RPC_URL=https://rpc.tenderly.co/fork/80173737-d3ec-4d6e-9e9e-9667ae2ec27b
+ETHERSCAN_API_KEY=0
+PRIVATE_KEY=0
+MNEMONIC=""
+
+
+
+
+
+
+
+#add source .env to terminal to load the variables
