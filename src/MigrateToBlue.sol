@@ -66,7 +66,6 @@ contract MigrateAaveV3OptimizerToBlue is IMorphoFlashLoanCallback, ReentrancyGua
         }
 
         aaveV3Optimizer.repay(marketParams.loanToken, assets, user);
-        
         for (uint256 i = 0; i < userSuppliedAssets.length; i++) {
             aaveV3Optimizer.withdrawCollateral(userSuppliedAssets[i], userSuppliedAmounts[i], user, address(this));
         }
@@ -77,7 +76,9 @@ contract MigrateAaveV3OptimizerToBlue is IMorphoFlashLoanCallback, ReentrancyGua
         MORPHO.borrow(marketParams, borrowedAmount, shares, user, address(this));
         
     }
-
+    function getAddressProvider() external view returns (address) {
+        return address(aaveV3Optimizer);
+    }
     function getUserInfo(address user, address blueCollateralAddress)
         external
         view
@@ -87,8 +88,8 @@ contract MigrateAaveV3OptimizerToBlue is IMorphoFlashLoanCallback, ReentrancyGua
             uint128 suppliedAssetIndexThatIsBlueCollateral,
             address[] memory userBorrowedAsset,
             uint256[] memory userBorrowedAmounts
-        )
-    {
+        ) {
+
         userSuppliedAssets = aaveV3Optimizer.userCollaterals(user);
         userBorrowedAsset = aaveV3Optimizer.userBorrows(user);
         userSuppliedAmounts = new uint256[](userSuppliedAssets.length);

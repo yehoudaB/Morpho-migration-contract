@@ -5,6 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {Morpho as AaveV3Optimizer} from "@morphoAave3Optimizer/src/Morpho.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {WETH} from "@mySrc/WETH.sol";
 import {MorphoBlueSnippets} from "@morpho-blue-snippets/morpho-blue/MorphoBlueSnippets.sol";
@@ -13,8 +14,8 @@ import {IMorpho, Id} from "@morpho-blue/interfaces/IMorpho.sol";
 import {MigrateAaveV3OptimizerToBlue} from "@mySrc/MigrateToBlue.sol";
 
 contract TestMorphoTransfer is Test {
-   
     using SafeERC20 for IERC20;
+
     AaveV3Optimizer public aaveV3Optimizer;
     IMorpho public morphoBlue;
     MigrateAaveV3OptimizerToBlue public migrateAaveV3OptimizerToBlue;
@@ -28,15 +29,14 @@ contract TestMorphoTransfer is Test {
     //Id constant wstETH_wETH_marketId  = 0xc54d7acf14de29e0e5527cabd7a576506870346a78a11a6762e2cca66322ec41;
     uint256 constant loanToValue_wstETH_wETH = 945000000000000000;
 
-    
     function setUp() public {
-        aaveV3Optimizer =  AaveV3Optimizer(0x33333aea097c193e66081E930c33020272b33333);
+        aaveV3Optimizer = AaveV3Optimizer(0x33333aea097c193e66081E930c33020272b33333);
         morphoBlue = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
         morphoBlueSnippets = MorphoBlueSnippets(address(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb));
         migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(morphoBlue, aaveV3Optimizer);
         address owner = aaveV3Optimizer.owner();
         console.log("Morpho owner: %s", owner);
-        
+
         vm.deal(USER_1, 100 ether);
     }
 
@@ -48,10 +48,10 @@ contract TestMorphoTransfer is Test {
         uint256 wstETHBalanceBefore = aaveV3Optimizer.collateralBalance(WSTETH, USER_1);
         console.log("wstETHBalanceBefore: %s", wstETHBalanceBefore);
         vm.startBroadcast(USER_1);
-        uint256 amountWithdrawn =  aaveV3Optimizer.withdrawCollateral(WSTETH, 1 ether, USER_1, USER_1);
+        uint256 amountWithdrawn = aaveV3Optimizer.withdrawCollateral(WSTETH, 1 ether, USER_1, USER_1);
         vm.stopBroadcast();
         console.log("amountWithdrawn: %s", amountWithdrawn);
-        uint256 wstETHBalanceAfter = aaveV3Optimizer.collateralBalance( WSTETH, USER_1);
+        uint256 wstETHBalanceAfter = aaveV3Optimizer.collateralBalance(WSTETH, USER_1);
         console.log("wstETHBalanceAfter: %s", wstETHBalanceAfter);
         assertEq(wstETHBalanceAfter, wstETHBalanceBefore - 1 ether);
     }
@@ -63,26 +63,25 @@ contract TestMorphoTransfer is Test {
     function testRepayWETH_v3Optimizer() public {
         vm.startBroadcast(USER_1);
         // wrap ETH to WETH
-        WETH(payable (WETH_address)).deposit{value: 1 ether}();
+        WETH(payable(WETH_address)).deposit{value: 1 ether}();
         IERC20(WETH_address).approve(address(aaveV3Optimizer), 1 ether);
         // balance of WETH in AaveV3Optimizer
         uint256 balanceWETH = IERC20(WETH_address).balanceOf(address(USER_1));
         console.log("balanceWETH: %s", balanceWETH);
-        uint256 amountRepayed =  aaveV3Optimizer.repay(WETH_address, 1 ether, USER_1);
+        uint256 amountRepayed = aaveV3Optimizer.repay(WETH_address, 1 ether, USER_1);
         vm.stopBroadcast();
         console.log("amountRepayed: %s", amountRepayed);
-       
     }
 
     function testDeposit_blue() public {
         //MarketParams memory marketParams = morphoBlue.idToMarketParams(wstETH_wETH_marketId);
-       
-        MarketParams memory marketParams =  MarketParams({
-          loanToken : WETH_address,
-            collateralToken : WSTETH,
-            oracle : chainlinkOracle_wstETH_wETH,
-            irm : adaptativeCurveIrm,
-            lltv : loanToValue_wstETH_wETH
+
+        MarketParams memory marketParams = MarketParams({
+            loanToken: WETH_address,
+            collateralToken: WSTETH,
+            oracle: chainlinkOracle_wstETH_wETH,
+            irm: adaptativeCurveIrm,
+            lltv: loanToValue_wstETH_wETH
         });
 
         bytes memory data = hex"";
@@ -95,26 +94,24 @@ contract TestMorphoTransfer is Test {
         vm.stopBroadcast();
     }
 
-
     function testMigration() public {
-          uint256 userCollateralWstETH =  aaveV3Optimizer.collateralBalance(WSTETH, USER_1);
-        uint256 userCollateralUSDC =  aaveV3Optimizer.collateralBalance(USDC, USER_1);
-        uint256 userBorrow =  aaveV3Optimizer.borrowBalance(WETH_address, USER_1);
-        
+        uint256 userCollateralWstETH = aaveV3Optimizer.collateralBalance(WSTETH, USER_1);
+        uint256 userCollateralUSDC = aaveV3Optimizer.collateralBalance(USDC, USER_1);
+        uint256 userBorrow = aaveV3Optimizer.borrowBalance(WETH_address, USER_1);
+
         address[] memory userSuppliedAssets = new address[](2);
         userSuppliedAssets[0] = WSTETH;
         userSuppliedAssets[1] = USDC;
         uint256[] memory userSuppliedAmounts = new uint256[](2);
         userSuppliedAmounts[0] = userCollateralWstETH;
         userSuppliedAmounts[1] = userCollateralUSDC;
-         MarketParams memory marketParams =  MarketParams({
-          loanToken : WETH_address,
-            collateralToken : WSTETH,
-            oracle : chainlinkOracle_wstETH_wETH,
-            irm : adaptativeCurveIrm,
-            lltv : loanToValue_wstETH_wETH
+        MarketParams memory marketParams = MarketParams({
+            loanToken: WETH_address,
+            collateralToken: WSTETH,
+            oracle: chainlinkOracle_wstETH_wETH,
+            irm: adaptativeCurveIrm,
+            lltv: loanToValue_wstETH_wETH
         });
-
 
         vm.startBroadcast(USER_1);
 
@@ -122,18 +119,34 @@ contract TestMorphoTransfer is Test {
         morphoBlue.setAuthorization(address(migrateAaveV3OptimizerToBlue), true);
         migrateAaveV3OptimizerToBlue.migrate(
             USER_1,
-            marketParams, 
-            userSuppliedAssets, 
-            userSuppliedAmounts, 
+            marketParams,
+            userSuppliedAssets,
+            userSuppliedAmounts,
             0, // WSTETH is the collateral
-            WETH_address, 
+            WETH_address,
             userBorrow
         );
 
         vm.stopBroadcast();
     }
 
-  
-    
-    
+    function testGetUserInfo() public view {
+        (
+            address[] memory userSuppliedAssets,
+            uint256[] memory userSuppliedAmounts,
+            uint128 suppliedAssetIndexThatIsBlueCollateral,
+            address[] memory userBorrowedAsset,
+            uint256[] memory userBorrowedAmounts
+        ) = migrateAaveV3OptimizerToBlue.getUserInfo(USER_1, WSTETH);
+        
+        for(uint256 i = 0; i < userSuppliedAssets.length; i++){
+            console.log("userSuppliedAssets: ", ERC20(userSuppliedAssets[i]).symbol(), 
+            "userSuppliedAmounts: ", userSuppliedAmounts[i]);
+        }
+        for(uint256 i = 0; i < userBorrowedAsset.length; i++){
+            console.log("userBorrowedAsset:  ", ERC20(userBorrowedAsset[i]).symbol(),
+             " userBorrowedAmounts: ", userBorrowedAmounts[i]);
+        }
+        console.log("suppliedAssetIndexThatIsBlueCollateral: ", suppliedAssetIndexThatIsBlueCollateral);
+    }
 }

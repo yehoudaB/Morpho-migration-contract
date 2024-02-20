@@ -8,5 +8,5 @@
 
 ### Deploying on TENDERLY fork 
 ```
-    forge script script/DeployMigrateToBlue.s.sol:DeployMigrateToBlue  --rpc-url $TENDERLY_RPC_URL 
+    forge script script/DeployMigrateToBlue.s.sol:DeployMigrateToBlue  --rpc-url $TENDERLY_RPC_URL  --broadcast
 ````
