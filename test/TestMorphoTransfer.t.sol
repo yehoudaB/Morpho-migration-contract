@@ -12,14 +12,14 @@ import {MorphoBlueSnippets} from "@morpho-blue-snippets/morpho-blue/MorphoBlueSn
 import {MarketParams} from "@morpho-blue/interfaces/IMorpho.sol";
 import {IMorpho, Id} from "@morpho-blue/interfaces/IMorpho.sol";
 import {MigrateAaveV3OptimizerToBlue} from "@mySrc/MigrateToBlue.sol";
-
+import {DeployMigrateToBlue} from "../script/DeployMigrateToBlue.s.sol";
 contract TestMorphoTransfer is Test {
     using SafeERC20 for IERC20;
 
     AaveV3Optimizer public aaveV3Optimizer;
     IMorpho public morphoBlue;
     MigrateAaveV3OptimizerToBlue public migrateAaveV3OptimizerToBlue;
-    MorphoBlueSnippets public morphoBlueSnippets;
+    DeployMigrateToBlue public deployMigrateToBlue;   
     address constant USER_1 = 0x04Fb136989106430e56F24c3d6A473488235480E; // wsteth depositor in aaveV3optimizer
     address constant WETH_address = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -30,13 +30,17 @@ contract TestMorphoTransfer is Test {
     uint256 constant loanToValue_wstETH_wETH = 945000000000000000;
 
     function setUp() public {
-        aaveV3Optimizer = AaveV3Optimizer(0x33333aea097c193e66081E930c33020272b33333);
-        morphoBlue = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
-        morphoBlueSnippets = MorphoBlueSnippets(address(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb));
-        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(morphoBlue, aaveV3Optimizer);
-        address owner = aaveV3Optimizer.owner();
-        console.log("Morpho owner: %s", owner);
-
+        deployMigrateToBlue = new DeployMigrateToBlue();
+           (address aaveV3OptimizerAddress, address morphoAddress, address  deployedMigrateAaveV3OptimizerToBlueAddress) 
+           = deployMigrateToBlue.getConfig();
+        
+        vm.startBroadcast();
+        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(morphoAddress);
+        vm.stopBroadcast(); 
+     
+        aaveV3Optimizer = AaveV3Optimizer(aaveV3OptimizerAddress);
+        morphoBlue = IMorpho(morphoAddress);
+        
         vm.deal(USER_1, 100 ether);
     }
 
@@ -149,4 +153,27 @@ contract TestMorphoTransfer is Test {
         }
         console.log("suppliedAssetIndexThatIsBlueCollateral: ", suppliedAssetIndexThatIsBlueCollateral);
     }
+
+    function testGetUserInfoWithDeployedMigrateToBlue() public view {
+          (,, address  deployedMigrateAaveV3OptimizerToBlueAddress) 
+           = deployMigrateToBlue.getConfig();
+        
+        MigrateAaveV3OptimizerToBlue alreadyDeployedMigrateAaveV3OptimizerToBlue = MigrateAaveV3OptimizerToBlue(
+           deployedMigrateAaveV3OptimizerToBlueAddress
+        );
+        (
+            address[] memory userSuppliedAssets,
+            uint256[] memory userSuppliedAmounts,
+            uint128 suppliedAssetIndexThatIsBlueCollateral,
+            address[] memory userBorrowedAsset,
+            uint256[] memory userBorrowedAmounts
+        ) = alreadyDeployedMigrateAaveV3OptimizerToBlue.getUserInfo(USER_1, WSTETH);
+    }
+
+    
+
+
+   
 }
+
+

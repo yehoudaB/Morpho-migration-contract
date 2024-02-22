@@ -21,40 +21,28 @@ contract InteractWithMigrateToBlue is Script {
     //Id constant wstETH_wETH_marketId  = 0xc54d7acf14de29e0e5527cabd7a576506870346a78a11a6762e2cca66322ec41;
     uint256 constant loanToValue_wstETH_wETH = 945000000000000000;
 
-    ////////////////////////////////////////// 
+    //////////////////////////////////////////
     // update this address with the address of the user you want to interact with
     address user = 0x04Fb136989106430e56F24c3d6A473488235480E;
     //////////////////////////////////////////
-    function run() public  {
+
+    function run() public {
         DeployMigrateToBlue deployMigrateToBlue = new DeployMigrateToBlue();
-        (, , address migrateAaveV3OptimizerToBlueAddress) = deployMigrateToBlue.getConfig();
-        MigrateAaveV3OptimizerToBlue migrateAaveV3OptimizerToBlue = MigrateAaveV3OptimizerToBlue(migrateAaveV3OptimizerToBlueAddress);
-        
-       
+        (address aaveV3OptimizerAddress, address morphoAddress, address migrateAaveV3OptimizerToBlueAddress) =
+            deployMigrateToBlue.getConfig();
+        MigrateAaveV3OptimizerToBlue migrateAaveV3OptimizerToBlue =
+            MigrateAaveV3OptimizerToBlue(migrateAaveV3OptimizerToBlueAddress);
+
+        address a = address(migrateAaveV3OptimizerToBlue);
+        console.log("a", a);
 
         MarketParams memory marketParams = MarketParams({
-            loanToken: WETH_address ,
+            loanToken: WETH_address,
             collateralToken: WSTETH,
             oracle: chainlinkOracle_wstETH_wETH,
             irm: adaptativeCurveIrm,
             lltv: loanToValue_wstETH_wETH
         });
-        
-       console.log("1", migrateAaveV3OptimizerToBlue.aaveV3Optimizer.address)   ;
-       console.log("2", migrateAaveV3OptimizerToBlueAddress)   ;
-       address  a = migrateAaveV3OptimizerToBlue.getAddressProvider();
-        console.log("a: %s",a);
-        (
-            address[] memory userSuppliedAssets,
-            uint256[] memory userSuppliedAmounts,
-            uint128 suppliedAssetIndexThatIsBlueCollateral,
-            address[] memory userBorrowedAsset,
-            uint256[] memory userBorrowedAmounts
-        ) = migrateAaveV3OptimizerToBlue.getUserInfo(user, WSTETH);
-        
-       
-        
-        
+        console.log("opt");
     }
-
 }

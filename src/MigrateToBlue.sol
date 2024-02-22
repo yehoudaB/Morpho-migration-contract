@@ -11,13 +11,15 @@ import {console} from "forge-std/console.sol";
 
 contract MigrateAaveV3OptimizerToBlue is IMorphoFlashLoanCallback, ReentrancyGuard {
     IMorpho private immutable MORPHO;
-    AaveV3Optimizer public aaveV3Optimizer;
-    uint256 public shares;
+    AaveV3Optimizer constant private aaveV3Optimizer  =  AaveV3Optimizer(0x33333aea097c193e66081E930c33020272b33333);
+    uint256 private  shares;
 
-    constructor(IMorpho _morpho, AaveV3Optimizer _aaveV3Optimizer) {
-        MORPHO = _morpho;
-        aaveV3Optimizer = _aaveV3Optimizer;
+    constructor(address _morpho) {
+        MORPHO = IMorpho(_morpho);
     }
+
+    
+
 
     function migrate(
         address user,
@@ -57,13 +59,12 @@ contract MigrateAaveV3OptimizerToBlue is IMorphoFlashLoanCallback, ReentrancyGua
        
         if(IERC20(marketParams.loanToken).allowance(address(this), address(aaveV3Optimizer)) < assets){
             IERC20(marketParams.loanToken).approve(address(aaveV3Optimizer), type(uint256).max);
+            IERC20(marketParams.loanToken).approve(address(MORPHO), type(uint256).max);
         }
         if(IERC20(marketParams.collateralToken).allowance(address(this), address(MORPHO)) < assets){
             IERC20(marketParams.collateralToken).approve(address(MORPHO), type(uint256).max);
         }
-        if(IERC20(marketParams.loanToken).allowance(address(this), address(MORPHO)) < assets){
-            IERC20(marketParams.loanToken).approve(address(MORPHO), type(uint256).max);
-        }
+      
 
         aaveV3Optimizer.repay(marketParams.loanToken, assets, user);
         for (uint256 i = 0; i < userSuppliedAssets.length; i++) {
@@ -76,9 +77,7 @@ contract MigrateAaveV3OptimizerToBlue is IMorphoFlashLoanCallback, ReentrancyGua
         MORPHO.borrow(marketParams, borrowedAmount, shares, user, address(this));
         
     }
-    function getAddressProvider() external view returns (address) {
-        return address(aaveV3Optimizer);
-    }
+   
     function getUserInfo(address user, address blueCollateralAddress)
         external
         view

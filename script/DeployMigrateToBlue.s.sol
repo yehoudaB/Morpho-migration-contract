@@ -17,15 +17,8 @@ contract DeployMigrateToBlue is Script {
     address constant migrateAaveV3OptimizerToBlueAddress = 0x54DE0102958cB9a8862FF219B6D37ff8BcF5CE33 ;
 
     function run() public returns (MigrateAaveV3OptimizerToBlue migrateAaveV3OptimizerToBlue) {
-      
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
-        AaveV3Optimizer aaveV3Optimizer = AaveV3Optimizer(aaveV3OptimizerAddress);
-        IMorpho morpho = IMorpho(morphoAddress);
-        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(
-            morpho,
-            aaveV3Optimizer
-        );
-
+        migrateAaveV3OptimizerToBlue = new MigrateAaveV3OptimizerToBlue(morphoAddress);
         vm.stopBroadcast();
         return (migrateAaveV3OptimizerToBlue);
     }
